@@ -72,33 +72,25 @@ export function createUI(app) {
   const actions = el('div', 'actions');
   const glb = el('button', 'act', '↓ GLB');
   const obj = el('button', 'act', '↓ OBJ');
-  const gif = el('button', 'gif-save', '↓ Save rotation GIF');
   const panelGif = el('button', 'act gif-act', '↓ GIF');
   panelGif.title = 'Save one full rotation as GIF';
   const share = el('button', 'act', 'Share');
   glb.onclick = () => app.exportGLB();
   obj.onclick = () => app.exportOBJ();
-  const gifButtons = [gif, panelGif];
-  const saveGIF = async () => {
-    gifButtons.forEach((button) => { button.disabled = true; });
+  panelGif.onclick = async () => {
+    panelGif.disabled = true;
     try {
       await app.exportGIF((done, total) => {
-        gif.textContent = `GIF ${Math.round(done / total * 100)}%`;
         panelGif.textContent = `${Math.round(done / total * 100)}%`;
       });
-      gifButtons.forEach((button) => { button.textContent = 'Saved!'; });
+      panelGif.textContent = 'Saved!';
     } catch (error) {
       console.error('GIF export failed', error);
-      gifButtons.forEach((button) => { button.textContent = 'Failed'; });
+      panelGif.textContent = 'Failed';
     } finally {
-      setTimeout(() => {
-        gif.textContent = '↓ Save rotation GIF';
-        panelGif.textContent = '↓ GIF';
-        gifButtons.forEach((button) => { button.disabled = false; });
-      }, 1200);
+      setTimeout(() => { panelGif.textContent = '↓ GIF'; panelGif.disabled = false; }, 1200);
     }
   };
-  gif.onclick = panelGif.onclick = saveGIF;
   share.onclick = async () => {
     try { await navigator.clipboard.writeText(app.shareURL()); flash(share, 'Copied!'); }
     catch { history.replaceState(null, '', app.shareURL()); flash(share, 'In URL bar'); }
@@ -108,7 +100,6 @@ export function createUI(app) {
 
   panel.append(el('div', 'hint', 'Drag to rotate · scroll to zoom'));
   document.body.append(panel);
-  document.body.append(gif);
 
   const toggle = el('button', 'collapse', '⚙');
   const mobile = matchMedia('(max-width: 560px)');

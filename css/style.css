@@ -138,21 +138,6 @@ input[type=range]::-moz-range-thumb {
 
 .act:disabled { opacity: .7; cursor: wait; }
 
-.gif-save {
-  position: fixed; z-index: 25;
-  right: max(14px, env(safe-area-inset-right));
-  bottom: max(54px, calc(env(safe-area-inset-bottom) + 40px));
-  padding: 11px 15px; min-height: 42px;
-  border: 1px solid #0e54ad; border-radius: 11px;
-  background: #125dbb; color: #fff;
-  box-shadow: 0 8px 24px rgba(11, 54, 110, .25);
-  font: 700 13px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif;
-  cursor: pointer;
-}
-.gif-save:hover { background: #0d4e9e; }
-.gif-save:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-.gif-save:disabled { opacity: .72; cursor: wait; }
-
 .actions .act { white-space: nowrap; }
 .gif-act { background: #125dbb; border-color: #125dbb; color: #fff; }
 .gif-act:hover { background: #0d4e9e; }

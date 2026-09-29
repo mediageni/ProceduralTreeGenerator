@@ -9,7 +9,7 @@ import { paramsFromSeed, setDerived, encodeConfig, decodeConfig } from './params
 import { randomSeed, seedToString, stringToSeed } from './rng.js';
 import { exportGLB, exportOBJ } from './exporter.js';
 import { exportRotationGIF } from './gif-export.js';
-import { createUI } from './ui.js?v=20260929-gif-panel';
+import { createUI } from './ui.js?v=20260929-gif-panel-only';
 
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
