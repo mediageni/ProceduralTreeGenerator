@@ -2,7 +2,7 @@
 
 Create and export procedural low poly 3D trees in your browser.
 
-**Live generator:** https://appsdesigner.nl/procedural-tree-generator/
+**Live generator:** https://3d.mediageni.com/procedural-tree-generator/
 
 Run locally with a static web server from this directory, then open its local URL in a browser. For example:
 
