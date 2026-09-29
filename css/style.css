@@ -152,3 +152,7 @@ input[type=range]::-moz-range-thumb {
 .gif-save:hover { background: #0d4e9e; }
 .gif-save:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .gif-save:disabled { opacity: .72; cursor: wait; }
+
+.actions .act { white-space: nowrap; }
+.gif-act { background: #125dbb; border-color: #125dbb; color: #fff; }
+.gif-act:hover { background: #0d4e9e; }

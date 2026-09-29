@@ -73,26 +73,37 @@ export function createUI(app) {
   const glb = el('button', 'act', '↓ GLB');
   const obj = el('button', 'act', '↓ OBJ');
   const gif = el('button', 'gif-save', '↓ Save rotation GIF');
-  const share = el('button', 'act', '🔗 Share');
+  const panelGif = el('button', 'act gif-act', '↓ GIF');
+  panelGif.title = 'Save one full rotation as GIF';
+  const share = el('button', 'act', 'Share');
   glb.onclick = () => app.exportGLB();
   obj.onclick = () => app.exportOBJ();
-  gif.onclick = async () => {
-    gif.disabled = true;
+  const gifButtons = [gif, panelGif];
+  const saveGIF = async () => {
+    gifButtons.forEach((button) => { button.disabled = true; });
     try {
-      await app.exportGIF((done, total) => { gif.textContent = `GIF ${Math.round(done / total * 100)}%`; });
-      gif.textContent = 'Saved!';
+      await app.exportGIF((done, total) => {
+        gif.textContent = `GIF ${Math.round(done / total * 100)}%`;
+        panelGif.textContent = `${Math.round(done / total * 100)}%`;
+      });
+      gifButtons.forEach((button) => { button.textContent = 'Saved!'; });
     } catch (error) {
       console.error('GIF export failed', error);
-      gif.textContent = 'Failed';
+      gifButtons.forEach((button) => { button.textContent = 'Failed'; });
     } finally {
-      setTimeout(() => { gif.textContent = '↓ Save rotation GIF'; gif.disabled = false; }, 1200);
+      setTimeout(() => {
+        gif.textContent = '↓ Save rotation GIF';
+        panelGif.textContent = '↓ GIF';
+        gifButtons.forEach((button) => { button.disabled = false; });
+      }, 1200);
     }
   };
+  gif.onclick = panelGif.onclick = saveGIF;
   share.onclick = async () => {
     try { await navigator.clipboard.writeText(app.shareURL()); flash(share, 'Copied!'); }
     catch { history.replaceState(null, '', app.shareURL()); flash(share, 'In URL bar'); }
   };
-  actions.append(glb, obj, share);
+  actions.append(glb, obj, panelGif, share);
   panel.append(actions);
 
   panel.append(el('div', 'hint', 'Drag to rotate · scroll to zoom'));
