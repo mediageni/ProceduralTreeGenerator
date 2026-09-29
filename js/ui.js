@@ -72,20 +72,36 @@ export function createUI(app) {
   const actions = el('div', 'actions');
   const glb = el('button', 'act', '↓ GLB');
   const obj = el('button', 'act', '↓ OBJ');
+  const gif = el('button', 'act', '↓ GIF');
   const share = el('button', 'act', '🔗 Share');
   glb.onclick = () => app.exportGLB();
   obj.onclick = () => app.exportOBJ();
+  gif.onclick = async () => {
+    gif.disabled = true;
+    try {
+      await app.exportGIF((done, total) => { gif.textContent = `GIF ${Math.round(done / total * 100)}%`; });
+      gif.textContent = 'Saved!';
+    } catch (error) {
+      console.error('GIF export failed', error);
+      gif.textContent = 'Failed';
+    } finally {
+      setTimeout(() => { gif.textContent = '↓ GIF'; gif.disabled = false; }, 1200);
+    }
+  };
   share.onclick = async () => {
     try { await navigator.clipboard.writeText(app.shareURL()); flash(share, 'Copied!'); }
     catch { history.replaceState(null, '', app.shareURL()); flash(share, 'In URL bar'); }
   };
-  actions.append(glb, obj, share);
+  actions.append(glb, obj, gif, share);
   panel.append(actions);
 
   panel.append(el('div', 'hint', 'Drag to rotate · scroll to zoom'));
   document.body.append(panel);
 
   const toggle = el('button', 'collapse', '⚙');
+  const mobile = matchMedia('(max-width: 560px)');
+  panel.classList.toggle('hidden', mobile.matches);
+  mobile.addEventListener('change', (event) => panel.classList.toggle('hidden', event.matches));
   toggle.onclick = () => panel.classList.toggle('hidden');
   document.body.append(toggle);
 
