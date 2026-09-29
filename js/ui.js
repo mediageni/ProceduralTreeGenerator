@@ -72,7 +72,7 @@ export function createUI(app) {
   const actions = el('div', 'actions');
   const glb = el('button', 'act', '↓ GLB');
   const obj = el('button', 'act', '↓ OBJ');
-  const gif = el('button', 'act', '↓ GIF');
+  const gif = el('button', 'gif-save', '↓ Save rotation GIF');
   const share = el('button', 'act', '🔗 Share');
   glb.onclick = () => app.exportGLB();
   obj.onclick = () => app.exportOBJ();
@@ -85,18 +85,19 @@ export function createUI(app) {
       console.error('GIF export failed', error);
       gif.textContent = 'Failed';
     } finally {
-      setTimeout(() => { gif.textContent = '↓ GIF'; gif.disabled = false; }, 1200);
+      setTimeout(() => { gif.textContent = '↓ Save rotation GIF'; gif.disabled = false; }, 1200);
     }
   };
   share.onclick = async () => {
     try { await navigator.clipboard.writeText(app.shareURL()); flash(share, 'Copied!'); }
     catch { history.replaceState(null, '', app.shareURL()); flash(share, 'In URL bar'); }
   };
-  actions.append(glb, obj, gif, share);
+  actions.append(glb, obj, share);
   panel.append(actions);
 
   panel.append(el('div', 'hint', 'Drag to rotate · scroll to zoom'));
   document.body.append(panel);
+  document.body.append(gif);
 
   const toggle = el('button', 'collapse', '⚙');
   const mobile = matchMedia('(max-width: 560px)');
