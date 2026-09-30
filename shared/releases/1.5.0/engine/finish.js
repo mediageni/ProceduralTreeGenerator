@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { toCreasedNormals } from "../vendor/BufferGeometryUtils.js";
 
 export const FINISHES = {
   angular: { label: "Angular" },
@@ -20,6 +21,7 @@ export function withShapeFinish(key, build) {
 export function shapeSegments(base) {
   return activeFinish === "angular" ? base : Math.ceil(base * 1.4);
 }
+export const shapeFinish = () => activeFinish;
 export function boxGeometry(w, h, d, key = activeFinish) {
   if (key !== "soft") return new THREE.BoxGeometry(w, h, d);
   const half = [w / 2, h / 2, d / 2],
@@ -97,40 +99,24 @@ export function boxGeometry(w, h, d, key = activeFinish) {
   geometry.computeVertexNormals();
   return geometry;
 }
-function creaseNormals(input) {
-  const geometry = input.index ? input.toNonIndexed() : input;
-  const position = geometry.getAttribute("position"),
-    normals = new Float32Array(position.count * 3),
-    incident = new Map(),
-    faces = [];
-  const key = (i) =>
-    [position.getX(i), position.getY(i), position.getZ(i)]
-      .map((v) => Math.round(v * 100000))
-      .join(",");
-  for (let i = 0; i < position.count; i += 3) {
-    const points = [0, 1, 2].map((k) =>
-      new THREE.Vector3().fromBufferAttribute(position, i + k),
-    );
-    const n = points[1]
-      .sub(points[0])
-      .cross(points[2].sub(points[0]))
-      .normalize();
-    faces.push(n);
-    for (let k = 0; k < 3; k++) {
-      const id = key(i + k);
-      if (!incident.has(id)) incident.set(id, []);
-      incident.get(id).push(n);
-    }
+// Prepare each surface before batching, when its topology and authored normals
+// are still available. Analytic curves keep their original normals/cap seams.
+export function prepareShapeGeometry(input, key = activeFinish) {
+  if (key !== "soft" || input.userData.finishPrepared) return input;
+  if (
+    input.userData.smoothSurface ||
+    [
+      "SphereGeometry",
+      "CylinderGeometry",
+      "TorusGeometry",
+      "TubeGeometry",
+    ].includes(input.type)
+  ) {
+    input.userData.finishPrepared = true;
+    return input;
   }
-  const threshold = Math.cos(THREE.MathUtils.degToRad(50));
-  for (let i = 0; i < position.count; i++) {
-    const face = faces[Math.floor(i / 3)],
-      sum = new THREE.Vector3();
-    for (const normal of incident.get(key(i)))
-      if (face.dot(normal) > threshold) sum.add(normal);
-    sum.normalize().toArray(normals, i * 3);
-  }
-  geometry.setAttribute("normal", new THREE.BufferAttribute(normals, 3));
+  const geometry = toCreasedNormals(input, THREE.MathUtils.degToRad(50));
+  geometry.userData.finishPrepared = true;
   return geometry;
 }
 export function applyShapeFinish(root, key) {
@@ -153,7 +139,7 @@ export function applyShapeFinish(root, key) {
       if (!processed.has(geometry)) {
         processed.add(geometry);
         const before = geometry;
-        geometry = creaseNormals(geometry);
+        geometry = prepareShapeGeometry(geometry, key);
         if (before !== geometry) disposed.add(before);
       }
       replacements.set(old, geometry);

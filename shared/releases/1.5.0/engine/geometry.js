@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import { boxGeometry } from "./finish.js";
+import { boxGeometry, prepareShapeGeometry, shapeFinish } from "./finish.js";
+export { mergeVertices } from "../vendor/BufferGeometryUtils.js";
 
 // Exportable primitives and batching shared by the model adapters.
 export function part(root, name) {
@@ -124,9 +125,8 @@ export function mergePart(group) {
   for (const node of eligible) {
     const transform = inverse.clone().multiply(node.matrixWorld);
     const normal = new THREE.Matrix3().getNormalMatrix(transform);
-    const geometry = node.geometry.index
-      ? node.geometry.toNonIndexed()
-      : node.geometry;
+    const prepared = prepareShapeGeometry(node.geometry);
+    const geometry = prepared.index ? prepared.toNonIndexed() : prepared;
     const p = geometry.getAttribute("position"),
       n = geometry.getAttribute("normal"),
       c = geometry.getAttribute("color");
@@ -154,12 +154,14 @@ export function mergePart(group) {
       }
     }
     if (geometry !== node.geometry) geometry.dispose();
+    if (prepared !== node.geometry && prepared !== geometry) prepared.dispose();
     disposed.add(node.geometry);
     group.remove(node);
   }
   for (const geometry of disposed) geometry.dispose();
   for (const [material, batch] of batches) {
     const geometry = new THREE.BufferGeometry();
+    if (shapeFinish() === "soft") geometry.userData.finishPrepared = true;
     geometry.setAttribute(
       "position",
       new THREE.Float32BufferAttribute(batch.positions, 3),
