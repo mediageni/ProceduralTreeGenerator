@@ -2,6 +2,7 @@ import * as THREE from "three";
 
 export const FINISHES = {
   angular: { label: "Angular" },
+  shaped: { label: "More shapes" },
   soft: { label: "Soft edges" },
 };
 let activeFinish = "angular";
@@ -14,6 +15,10 @@ export function withShapeFinish(key, build) {
   } finally {
     activeFinish = previous;
   }
+}
+// New adapters can refine curved silhouettes without changing their proportions.
+export function shapeSegments(base) {
+  return activeFinish === "angular" ? base : Math.ceil(base * 1.4);
 }
 export function boxGeometry(w, h, d, key = activeFinish) {
   if (key !== "soft") return new THREE.BoxGeometry(w, h, d);

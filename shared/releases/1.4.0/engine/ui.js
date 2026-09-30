@@ -154,6 +154,7 @@ export function createUI(app) {
     section.append(body);
     panel.append(section);
     for (const spec of adapter.options) {
+      if (spec.key === "detailVersion") continue;
       const row = element("div", "option-row"),
         label = element("label", null, spec.label),
         input = element(spec.values ? "select" : "input");

@@ -128,14 +128,26 @@ export function mergePart(group) {
       ? node.geometry.toNonIndexed()
       : node.geometry;
     const p = geometry.getAttribute("position"),
-      n = geometry.getAttribute("normal");
+      n = geometry.getAttribute("normal"),
+      c = geometry.getAttribute("color");
     if (!batches.has(node.material))
-      batches.set(node.material, { positions: [], normals: [] });
+      batches.set(node.material, {
+        positions: [],
+        normals: [],
+        colors: [],
+        hasColors: false,
+      });
     const batch = batches.get(node.material),
       point = new THREE.Vector3();
+    batch.hasColors ||= !!c;
     for (let i = 0; i < p.count; i++) {
       point.fromBufferAttribute(p, i).applyMatrix4(transform);
       batch.positions.push(point.x, point.y, point.z);
+      batch.colors.push(
+        c ? c.getX(i) : 1,
+        c ? c.getY(i) : 1,
+        c ? c.getZ(i) : 1,
+      );
       if (n) {
         point.fromBufferAttribute(n, i).applyNormalMatrix(normal);
         batch.normals.push(point.x, point.y, point.z);
@@ -158,6 +170,11 @@ export function mergePart(group) {
         new THREE.Float32BufferAttribute(batch.normals, 3),
       );
     else geometry.computeVertexNormals();
+    if (batch.hasColors)
+      geometry.setAttribute(
+        "color",
+        new THREE.Float32BufferAttribute(batch.colors, 3),
+      );
     const result = mesh(group, geometry, material);
     result.name = material.name || group.name;
   }

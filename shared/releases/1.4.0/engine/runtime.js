@@ -155,7 +155,12 @@ async function initialize(adapter, onRenderer) {
     },
     setFinish(key) {
       if (FINISHES[key] && !app.locked("finish"))
-        change((state) => (state.finish = key));
+        change((state) => {
+          state.finish = key;
+          if (typeof state.params.detailVersion === "number")
+            state.params.detailVersion = key === "angular" ? 0 : 1;
+          adapter.onFinish?.(state.params, key);
+        }, true);
     },
     setSlider(key, value) {
       const spec = adapter.sliders.find((s) => s.key === key);
@@ -169,6 +174,19 @@ async function initialize(adapter, onRenderer) {
         );
     },
     setOption(key, value) {
+      // Keep the old adapter API available for saved integrations, while the
+      // user interface has one selector for the three model levels.
+      if (key === "detailVersion") {
+        if (value === 0 || value === 1)
+          app.setFinish(
+            value === 0
+              ? "angular"
+              : app.finishKey === "soft"
+                ? "soft"
+                : "shaped",
+          );
+        return;
+      }
       if (adapter.options?.some((s) => s.key === key) && !app.locked(key))
         change((state) => {
           state.params[key] = value;
@@ -382,10 +400,13 @@ async function initialize(adapter, onRenderer) {
   }
   function variation(seed, type) {
     const params = adapter.paramsFromSeed(seed, type);
-    return retainLocks(adapter, app.state, {
+    const next = retainLocks(adapter, app.state, {
       ...app.state,
       params: adapter.enrich ? adapter.enrich(params) : params,
     });
+    if (typeof next.params.detailVersion === "number")
+      next.params.detailVersion = next.finish === "angular" ? 0 : 1;
+    return next;
   }
   function addEntry(state, favorite) {
     if (app.busy || !libraryReady) return;
