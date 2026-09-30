@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { boxGeometry } from "./finish.js";
 
 // Exportable primitives and batching shared by the model adapters.
 export function part(root, name) {
@@ -15,7 +16,7 @@ export function mesh(group, geometry, material, position = [0, 0, 0]) {
   return result;
 }
 export function box(group, material, size, position) {
-  return mesh(group, new THREE.BoxGeometry(...size), material, position);
+  return mesh(group, boxGeometry(...size), material, position);
 }
 export function chamferedBox(group, material, size, position, chamfer = 0.15) {
   const [w, h, d] = size,

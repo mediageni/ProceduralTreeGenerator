@@ -111,7 +111,7 @@ export function windowMaterials(settings, y = 0) {
     color: settings.night
       ? settings.color
       : settings.color.clone().lerp(tint, tower ? 0.8 : 0.82),
-    roughness: 0.1,
+    roughness: tower ? 0.32 : 0.1,
     metalness: settings.night ? 0 : tower ? 0.3 : 0.28,
     emissive: settings.night ? settings.win : glass,
     emissiveIntensity: settings.night
@@ -123,6 +123,13 @@ export function windowMaterials(settings, y = 0) {
         : 0.12,
   });
   const unlit = material.clone();
+  if (tower) {
+    for (const pane of [material, unlit]) {
+      pane.polygonOffset = true;
+      pane.polygonOffsetFactor = -1;
+      pane.polygonOffsetUnits = -1;
+    }
+  }
   unlit.emissiveIntensity = settings.night
     ? material.emissiveIntensity * (tower ? 0.04 : 0.05)
     : material.emissiveIntensity;
@@ -198,8 +205,12 @@ export function materializeWindows(root) {
             plane.name = "window-pane";
             plane.position.y = (top + bottom) / 2;
             plane.position[axis] = (left + right) / 2;
+            const separation = tower
+              ? Math.max(0.008, Math.min(s.colW, s.floorH) * 0.012)
+              : 0.008;
             plane.position[face] =
-              (sign > 0 ? bounds.max[face] : bounds.min[face]) + sign * 0.008;
+              (sign > 0 ? bounds.max[face] : bounds.min[face]) +
+              sign * separation;
             plane.rotation.y =
               face === "z"
                 ? sign > 0
@@ -217,6 +228,11 @@ export function materializeWindows(root) {
   }
   if (panes.children.length) {
     mergeMeshes(panes);
+    // Thin glass must not pick up unstable self-shadow samples from its own wall.
+    if (
+      walls.some((wall) => wall.material.userData.windowGrid.kind === "tower")
+    )
+      for (const pane of panes.children) pane.receiveShadow = false;
     root.add(panes);
   } else
     for (const pair of pairs.values()) {

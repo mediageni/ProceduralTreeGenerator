@@ -4,6 +4,7 @@
 // No UI, no globals. Deterministic from the seed.
 
 import * as THREE from "three";
+import { buildNaturalTree } from "./natural.js";
 import { makeRng } from "@engine/rng.js";
 import { addTreeDetails, treeShape, foliageShades } from "./details.js";
 import { part, mergePart } from "@engine/geometry.js";
@@ -144,6 +145,7 @@ function buildPine(group, p, mats, r, foliage = group) {
 }
 
 export function buildTree(p, mats) {
+  if (detailed(p)) return buildNaturalTree(p, mats);
   const g = new THREE.Group();
   g.name = "tree";
   const r = makeRng((p.seed ^ 0x1234abcd) >>> 0);

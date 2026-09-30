@@ -1,6 +1,7 @@
 import { ENGINE_VERSION, GENERATORS } from "./version.js";
 import { PALETTES } from "./palettes.js";
 import { seedToString } from "./rng.js";
+import { FINISHES } from "./finish.js";
 const element = (tag, className, text) => {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -96,6 +97,16 @@ export function createUI(app) {
     palettes.append(node);
   }
   panel.append(palettes);
+  heading("Shape finish", "finish");
+  const finishes = element("div", "chips"),
+    finishButtons = {};
+  for (const [key, finish] of Object.entries(FINISHES)) {
+    const node = button(finish.label, () => app.setFinish(key), "chip");
+    controls[controls.length - 1].key = "finish";
+    finishButtons[key] = node;
+    finishes.append(node);
+  }
+  panel.append(finishes);
   const fields = element("details", "tuning");
   fields.append(element("summary", null, "Shape & parameter locks"));
   const fieldBody = element("div", "details-body");
@@ -325,6 +336,10 @@ export function createUI(app) {
   document.addEventListener("keydown", keyboard);
   let entrySignature = "";
   app.sync = () => {
+    for (const [key, node] of Object.entries(finishButtons)) {
+      node.classList.toggle("on", key === app.finishKey);
+      node.setAttribute("aria-pressed", String(key === app.finishKey));
+    }
     seed.textContent = `#${seedToString(app.params.seed)}`;
     for (const control of controls)
       control.node.disabled =

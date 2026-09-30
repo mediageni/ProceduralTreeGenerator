@@ -89,9 +89,21 @@ export function foliageShades(p, mat) {
   if (!detailed(p)) return [mat];
   const base = mat.clone();
   base.name = "foliage";
-  if (p.season === "autumn") base.color.set("#c98236");
+  const hsl = base.color.getHSL({});
+  if (
+    hsl.s > 0.2 &&
+    hsl.h < 0.19 &&
+    (p.season === "summer" || p.kind === "pine")
+  )
+    base.color.setHSL(
+      0.29 + (p.seed % 17) * 0.002,
+      0.45,
+      Math.max(0.32, Math.min(0.44, hsl.l)),
+    );
+  if (p.season === "autumn")
+    base.color.set(p.kind === "pine" ? "#73804a" : "#c98236");
   if (p.season === "blossom") base.color.set("#e4a0b6");
-  if (p.season === "winter") base.color.set("#e9f2f6");
+  if (p.season === "winter") base.color.lerp(new THREE.Color("#d0e0d5"), 0.3);
   const shades = [-0.04, 0, 0.06].map((light, i) => {
     const result = base.clone();
     result.name = "foliage-" + i;
@@ -101,7 +113,7 @@ export function foliageShades(p, mat) {
   base.dispose();
   return shades;
 }
-export function addTreeDetails(root, p, mats, tips) {
+export function addTreeDetails(root, p, mats, tips, support) {
   if (!detailed(p)) return;
   const r = makeRng(p.seed ^ 0xe10af777),
     R = p.trunkRadius;
@@ -126,34 +138,49 @@ export function addTreeDetails(root, p, mats, tips) {
       end = p.height * p.trunkFrac;
     for (let i = 0; i < 9; i++) {
       const y = ((i + 0.5) * end) / 10,
-        a = r() * Math.PI * 2;
+        a = r() * Math.PI * 2,
+        section = support?.trunkAt(y) ?? {
+          point: new THREE.Vector3(0, y, 0),
+          radius: R,
+        },
+        radius = section.radius;
       const patch = mesh(
         group,
         new THREE.IcosahedronGeometry(1, 0),
         mats.bark,
-        [Math.cos(a) * R * 0.96, y, Math.sin(a) * R * 0.96],
+        [
+          section.point.x + Math.cos(a) * radius * 0.91,
+          y,
+          section.point.z + Math.sin(a) * radius * 0.91,
+        ],
       );
       patch.scale.set(
-        R * 0.18,
-        R * (p.archetype === "aspen" ? 0.08 : 0.32),
-        R * 0.1,
+        radius * 0.25,
+        radius * (p.archetype === "aspen" ? 0.1 : 0.4),
+        radius * 0.1,
       );
-      patch.rotation.y = -a;
+      patch.rotation.y = Math.PI / 2 - a;
     }
     mergePart(group);
   }
   if (p.fruitOn && p.kind !== "pine" && p.foliageOn && p.season !== "winter") {
     const group = part(root, "Fruit");
     for (const tip of tips.filter((_, i) => i % 3 === 0).slice(0, 16)) {
+      const radius = Math.max(0.025, Math.min(0.07, p.foliageSize * 0.04));
+      const center = [tip.x, tip.y - radius * 1.7, tip.z];
+      tube(
+        group,
+        mats.trunk,
+        tip.toArray(),
+        [center[0], center[1] + radius * 0.8, center[2]],
+        radius * 0.12,
+        4,
+      );
       const apple = mesh(
         group,
-        new THREE.IcosahedronGeometry(p.foliageSize * 0.095, 1),
+        new THREE.IcosahedronGeometry(radius, 1),
         mats.fruit,
-        [
-          tip.x + p.foliageSize * 0.3,
-          tip.y - p.foliageSize * 0.5,
-          tip.z + p.foliageSize * 0.25,
-        ],
+        center,
       );
       apple.scale.y = 1.1;
     }

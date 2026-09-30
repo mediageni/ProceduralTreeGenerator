@@ -127,6 +127,7 @@ export function normalizeState(adapter, input) {
     "archetype",
     "look",
     "palette",
+    "finish",
     "color",
     ...adapter.sliders.map((s) => s.key),
     ...(adapter.options ?? []).map((s) => s.key),
@@ -139,6 +140,7 @@ export function normalizeState(adapter, input) {
     palette: ["original", "cozy", "modern", "winter"].includes(input.palette)
       ? input.palette
       : "original",
+    finish: input.finish === "soft" ? "soft" : "angular",
     locks: Array.isArray(input.locks)
       ? [...new Set(input.locks.filter((key) => validLocks.has(key)))].slice(
           0,
@@ -179,6 +181,7 @@ export function initialState(adapter, search, saved) {
     params: adapter.enrich ? adapter.enrich(params) : params,
     look: query.get("look") || adapter.defaultLook,
     palette: query.get("palette"),
+    finish: query.get("finish"),
   });
 }
 export class StateHistory {
@@ -228,7 +231,8 @@ export function retainLocks(adapter, oldState, nextState) {
   const next = clone(nextState);
   for (const key of oldState.locks) {
     if (key === "archetype") continue;
-    if (key === "look" || key === "palette") next[key] = oldState[key];
+    if (key === "look" || key === "palette" || key === "finish")
+      next[key] = oldState[key];
     else if (key === "color") next.params.color = clone(oldState.params.color);
     else if (adapter.sliders.find((s) => s.key === key)?.derived) {
       const spec = adapter.sliders.find((s) => s.key === key);

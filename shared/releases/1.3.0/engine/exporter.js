@@ -1,6 +1,28 @@
 import * as THREE from "three";
 import { GLTFExporter } from "three/addons/GLTFExporter.js";
 import { OBJExporter } from "three/addons/OBJExporter.js";
+function exportGeometry(model) {
+  // glTF/OBJ have no flatShading flag. Bake the preview's angular face normals
+  // into a detached snapshot; keep the live preview and shared materials intact.
+  const root = model.clone(true),
+    owned = new Set();
+  root.traverse((node) => {
+    if (!node.isMesh || !node.material.flatShading) return;
+    const geometry = node.geometry.index
+      ? node.geometry.toNonIndexed()
+      : node.geometry.clone();
+    geometry.computeVertexNormals();
+    node.geometry = geometry;
+    owned.add(geometry);
+  });
+  root.updateMatrixWorld(true);
+  return {
+    root,
+    dispose: () => {
+      for (const geometry of owned) geometry.dispose();
+    },
+  };
+}
 export function download(blob, filename) {
   const url = URL.createObjectURL(blob),
     link = document.createElement("a");
@@ -14,13 +36,26 @@ export function download(blob, filename) {
 }
 export async function glbBlob(model) {
   model.updateMatrixWorld(true);
-  const binary = await new GLTFExporter().parseAsync(model, {
-    binary: true,
-    onlyVisible: true,
-  });
-  return new Blob([binary], { type: "model/gltf-binary" });
+  const snapshot = exportGeometry(model);
+  try {
+    const binary = await new GLTFExporter().parseAsync(snapshot.root, {
+      binary: true,
+      onlyVisible: true,
+    });
+    return new Blob([binary], { type: "model/gltf-binary" });
+  } finally {
+    snapshot.dispose();
+  }
 }
 export function objFiles(model, name) {
+  const snapshot = exportGeometry(model);
+  try {
+    return objFilesFromModel(snapshot.root, name);
+  } finally {
+    snapshot.dispose();
+  }
+}
+function objFilesFromModel(model, name) {
   model.updateMatrixWorld(true);
   // OBJ has no material payload: provide its MTL beside the original OBJ download.
   const materials = new Map(),
@@ -41,6 +76,34 @@ export function objFiles(model, name) {
   } finally {
     for (const [material, oldName] of original.reverse())
       material.name = oldName;
+  }
+  // The pinned OBJExporter writes mesh positions without their vertex colours.
+  // Add the widely supported RGB vertex extension in export order, in sRGB.
+  const vertexColors = [];
+  let coloured = false;
+  model.traverse((node) => {
+    if (!node.isMesh && !node.isLine && !node.isPoints) return;
+    const positions = node.geometry.getAttribute("position");
+    const colors = node.geometry.getAttribute("color");
+    for (let i = 0; i < (positions?.count ?? 0); i++) {
+      const color = colors
+        ? new THREE.Color()
+            .fromBufferAttribute(colors, i)
+            .convertLinearToSRGB()
+            .toArray()
+        : null;
+      vertexColors.push(color);
+      if (color) coloured = true;
+    }
+  });
+  if (coloured) {
+    let index = 0;
+    obj = obj.replace(/^v [^\n]+/gm, (line) => {
+      const color = vertexColors[index++];
+      return color
+        ? `${line.split(/\s+/).slice(0, 4).join(" ")} ${color.join(" ")}`
+        : line;
+    });
   }
   const rgb = (color) =>
     color

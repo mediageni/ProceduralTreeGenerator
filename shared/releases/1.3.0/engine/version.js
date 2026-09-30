@@ -1,4 +1,4 @@
-export const ENGINE_VERSION = "1.2.0";
+export const ENGINE_VERSION = "1.3.0";
 export const STATE_VERSION = 1;
 export const GENERATORS = [
   {
@@ -18,6 +18,12 @@ export const GENERATORS = [
     path: "low-poly-boat-generator",
     label: "Boat & Ship",
     mirror: "LowPolyBoatGenerator",
+  },
+  {
+    id: "airplane",
+    path: "low-poly-airplane-generator",
+    label: "Airplane & Aircraft",
+    mirror: "LowPolyAirplaneGenerator",
   },
   {
     id: "house",

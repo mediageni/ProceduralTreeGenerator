@@ -19,6 +19,7 @@ import { makeZIP } from "./zip.js";
 import { WorkspaceStore } from "./persistence.js";
 import { createUI } from "./ui.js";
 import { turntableDistance } from "./framing.js";
+import { FINISHES, withShapeFinish, applyShapeFinish } from "./finish.js";
 
 export async function startGenerator(adapter) {
   let renderer;
@@ -111,6 +112,9 @@ async function initialize(adapter, onRenderer) {
     get paletteKey() {
       return historyState.current.palette;
     },
+    get finishKey() {
+      return historyState.current.finish;
+    },
     get locks() {
       return historyState.current.locks;
     },
@@ -141,6 +145,10 @@ async function initialize(adapter, onRenderer) {
     setPalette(key) {
       if (PALETTES[key] && !app.locked("palette"))
         change((state) => (state.palette = key));
+    },
+    setFinish(key) {
+      if (FINISHES[key] && !app.locked("finish"))
+        change((state) => (state.finish = key));
     },
     setSlider(key, value) {
       const spec = adapter.sliders.find((s) => s.key === key);
@@ -417,7 +425,10 @@ async function initialize(adapter, onRenderer) {
       );
     let root;
     try {
-      root = adapter.build(state.params, materials, state);
+      root = withShapeFinish(state.finish, () =>
+        adapter.build(state.params, materials, state),
+      );
+      applyShapeFinish(root, state.finish);
       root.updateMatrixWorld(true);
       const used = new Set();
       root.traverse((node) => {
@@ -482,7 +493,8 @@ async function initialize(adapter, onRenderer) {
     camera.position.copy(center).addScaledVector(direction, distance);
     controls.target.copy(center);
     controls.maxDistance = Math.max(adapter.camera.max, distance * 3);
-    camera.near = Math.max(0.01, radius / 1000);
+    // Keep enough depth precision for pane geometry on city-sized models.
+    camera.near = Math.max(0.01, radius / 100);
     camera.far = Math.max(adapter.camera.far, distance * 6);
     camera.updateProjectionMatrix();
     controls.update();
