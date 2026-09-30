@@ -13,9 +13,7 @@ import {
 import { randomSeed, seedToString, makeRng } from "./rng.js";
 import { PALETTES, applyPalette, paletteEnvironment } from "./palettes.js";
 import { disposeTree, disposeMaterials } from "./lifecycle.js";
-import { glbBlob, objFiles, download } from "./exporter.js";
-import { exportRotationGIF } from "./gif-export.js";
-import { makeZIP } from "./zip.js";
+import { download } from "./download.js";
 import { WorkspaceStore } from "./persistence.js";
 import { createUI } from "./ui.js";
 import { turntableDistance } from "./framing.js";
@@ -41,6 +39,7 @@ export async function startGenerator(adapter) {
     retry.textContent = "Open a fresh generator";
     notice.append(title, message, retry);
     document.body.append(notice);
+    window.dispatchEvent(new Event("generator-ready"));
     console.error(error);
   }
 }
@@ -79,8 +78,12 @@ async function initialize(adapter, onRenderer) {
   const store = new WorkspaceStore(
       document.documentElement.dataset.workspaceApi || null,
     ),
-    data = await store.init();
-  const saved = data.generators?.[adapter.id];
+    workspace = store.init(),
+    query = new URLSearchParams(location.search),
+    explicitModel = !!query.get("c") || query.has("seed") || query.has("type"),
+    data = explicitModel ? null : await workspace;
+  let libraryReady = !explicitModel || !store.api;
+  const saved = data?.generators?.[adapter.id];
   const historyState = new StateHistory(
     initialState(adapter, location.search, saved?.state),
   );
@@ -90,6 +93,7 @@ async function initialize(adapter, onRenderer) {
     contextLost = false;
   let lastTime = performance.now(),
     elapsed = 0,
+    previewReady = false,
     activeLook = null,
     activePalette = null;
   const app = {
@@ -100,6 +104,9 @@ async function initialize(adapter, onRenderer) {
     notice: "",
     entries: [],
     store,
+    get libraryReady() {
+      return libraryReady;
+    },
     get state() {
       return clone(historyState.current);
     },
@@ -233,7 +240,7 @@ async function initialize(adapter, onRenderer) {
       addEntry(app.state, true);
     },
     addVariants(count = 4) {
-      if (app.busy) return;
+      if (app.busy || !libraryReady) return;
       if (app.entries.length + count > 48)
         throw new Error(
           "Collections can contain up to 48 models. Remove an item before adding more.",
@@ -256,12 +263,14 @@ async function initialize(adapter, onRenderer) {
       app.sync();
     },
     async exportGLB() {
-      return operation(async () =>
-        download(await glbBlob(model), `${filename()}.glb`),
-      );
+      return operation(async () => {
+        const { glbBlob } = await import("./exporter.js");
+        return download(await glbBlob(model), `${filename()}.glb`);
+      });
     },
     async exportOBJ() {
       return operation(async () => {
+        const { objFiles } = await import("./exporter.js");
         const files = objFiles(model, filename());
         for (const file of files)
           download(new Blob([file.data], { type: "text/plain" }), file.name);
@@ -269,8 +278,9 @@ async function initialize(adapter, onRenderer) {
       });
     },
     async exportGIF(onProgress) {
-      return operation(() =>
-        exportRotationGIF({
+      return operation(async () => {
+        const { exportRotationGIF } = await import("./gif-export.js");
+        return exportRotationGIF({
           scene,
           camera,
           controls,
@@ -283,13 +293,17 @@ async function initialize(adapter, onRenderer) {
           },
           renderLoop: renderFrame,
           model,
-        }),
-      );
+        });
+      });
     },
     async exportCollection(format = "glb") {
       if (!app.entries.length)
         throw new Error("Add models to the collection first.");
       return operation(async () => {
+        const [{ glbBlob, objFiles }, { makeZIP }] = await Promise.all([
+          import("./exporter.js"),
+          import("./zip.js"),
+        ]);
         const files = [],
           entries = clone(app.entries);
         for (let i = 0; i < entries.length; i++) {
@@ -326,6 +340,7 @@ async function initialize(adapter, onRenderer) {
       });
     },
     async flushStorage() {
+      await restoreWorkspace;
       await store.flush();
     },
     dispose() {
@@ -349,16 +364,19 @@ async function initialize(adapter, onRenderer) {
       delete window.__rig;
     },
   };
-  for (const entry of saved?.entries ?? []) {
-    try {
-      app.entries.push({
-        ...entry,
-        state: normalizeState(adapter, entry.state),
-      });
-    } catch {
-      /* ignore unsupported saved entries */
+  function restoreEntries(saved) {
+    for (const entry of saved?.entries ?? []) {
+      try {
+        app.entries.push({
+          ...entry,
+          state: normalizeState(adapter, entry.state),
+        });
+      } catch {
+        /* ignore unsupported saved entries */
+      }
     }
   }
+  restoreEntries(saved);
   function filename() {
     return `${adapter.filePrefix}-${seedToString(app.params.seed)}`;
   }
@@ -370,7 +388,7 @@ async function initialize(adapter, onRenderer) {
     });
   }
   function addEntry(state, favorite) {
-    if (app.busy) return;
+    if (app.busy || !libraryReady) return;
     if (app.entries.length >= 48)
       throw new Error("Collections can contain up to 48 models.");
     app.entries.push({
@@ -383,7 +401,9 @@ async function initialize(adapter, onRenderer) {
     app.sync();
   }
   function persist() {
-    store.queue(adapter.id, app.state, app.entries);
+    // A share link can render and be edited before storage responds. Never
+    // overwrite saved favorites with an empty library while that read is pending.
+    if (libraryReady) store.queue(adapter.id, app.state, app.entries);
   }
   function commit(state, reframe = false) {
     if (app.busy) return;
@@ -527,6 +547,11 @@ async function initialize(adapter, onRenderer) {
     adapter.styles[app.styleKey].tick?.(rig, dt, model, elapsed);
     controls.update();
     renderer.render(scene, camera);
+    if (!previewReady) {
+      previewReady = true;
+      performance.mark("generator-preview-ready");
+      window.dispatchEvent(new Event("generator-ready"));
+    }
   }
   function visibility() {
     lastTime = performance.now();
@@ -573,6 +598,16 @@ async function initialize(adapter, onRenderer) {
       app.sync();
     }
   }
+  const restoreWorkspace =
+    explicitModel && store.api
+      ? workspace.then((data) => {
+          if (disposed) return;
+          restoreEntries(data.generators?.[adapter.id]);
+          libraryReady = true;
+          persist();
+          app.sync();
+        })
+      : Promise.resolve();
   renderer.setAnimationLoop(renderFrame);
   window.__app = app;
   window.__rig = { camera, controls, scene, renderer };

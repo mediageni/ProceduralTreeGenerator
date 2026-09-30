@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { GLTFExporter } from "three/addons/GLTFExporter.js";
 import { OBJExporter } from "three/addons/OBJExporter.js";
+import { download } from "./download.js";
+export { download } from "./download.js";
 function exportGeometry(model) {
   // glTF/OBJ have no flatShading flag. Bake the preview's angular face normals
   // into a detached snapshot; keep the live preview and shared materials intact.
@@ -22,17 +24,6 @@ function exportGeometry(model) {
       for (const geometry of owned) geometry.dispose();
     },
   };
-}
-export function download(blob, filename) {
-  const url = URL.createObjectURL(blob),
-    link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 30000);
-  return blob;
 }
 export async function glbBlob(model) {
   model.updateMatrixWorld(true);

@@ -417,19 +417,23 @@ export function createUI(app) {
     }
     for (const node of collectionList.querySelectorAll("button"))
       node.disabled = app.busy;
+    for (const node of libraryActions.querySelectorAll("button"))
+      node.disabled = app.busy || !app.libraryReady;
     zip.disabled = app.busy || !app.entries.length;
     library.querySelector("summary").textContent =
       `Favorites & collection (${app.entries.length})`;
     status.textContent = app.progress || app.notice;
     const mode = app.store.mode;
     storage.textContent =
-      mode === "saved"
-        ? "Automatically saved on this site. Keep your workspace link to reopen after clearing cookies or on another device."
-        : mode === "saving"
-          ? "Saving your workspace…"
-          : mode === "error"
-            ? "Automatic save failed. Current changes are in this session; retry to store them."
-            : "Session only on this copy. Model links and downloads remain available; favorites do not survive closing this page.";
+      mode === "loading"
+        ? "Loading your saved workspace…"
+        : mode === "saved"
+          ? "Automatically saved on this site. Keep your workspace link to reopen after clearing cookies or on another device."
+          : mode === "saving"
+            ? "Saving your workspace…"
+            : mode === "error"
+              ? "Automatic save failed. Current changes are in this session; retry to store them."
+              : "Session only on this copy. Model links and downloads remain available; favorites do not survive closing this page.";
     workspace.hidden = !app.store.link();
     retry.hidden = mode !== "error";
   };
