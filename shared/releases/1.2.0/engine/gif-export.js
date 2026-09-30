@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { turntableDistance } from "./framing.js";
 
 const SIZE = 400;
 const FRAMES = 36;
@@ -14,6 +15,7 @@ export async function exportRotationGIF({
   filename,
   onProgress,
   renderLoop,
+  model,
 }) {
   const target = new THREE.WebGLRenderTarget(SIZE, SIZE, { depthBuffer: true });
   target.texture.colorSpace = renderer.outputColorSpace;
@@ -21,6 +23,14 @@ export async function exportRotationGIF({
   captureCamera.aspect = 1;
   captureCamera.updateProjectionMatrix();
   const offset = camera.position.clone().sub(controls.target);
+  if (model) {
+    const size = new THREE.Box3()
+      .setFromObject(model)
+      .getSize(new THREE.Vector3());
+    offset.setLength(
+      Math.max(offset.length(), turntableDistance(size, offset, camera.fov, 1)),
+    );
+  }
   const pixels = new Uint8Array(SIZE * SIZE * 4);
   const rgba = new Uint8Array(pixels.length);
   const rowBytes = SIZE * 4;

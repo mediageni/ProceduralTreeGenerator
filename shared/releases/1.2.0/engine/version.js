@@ -1,4 +1,4 @@
-export const ENGINE_VERSION = "1.1.0";
+export const ENGINE_VERSION = "1.2.0";
 export const STATE_VERSION = 1;
 export const GENERATORS = [
   {

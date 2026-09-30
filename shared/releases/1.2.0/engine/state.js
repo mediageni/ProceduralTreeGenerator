@@ -98,7 +98,10 @@ export function normalizeParams(adapter, input, legacy = false) {
     ? input.archetype
     : Object.keys(adapter.archetypes)[0];
   const fallback = adapter.enrich
-    ? adapter.enrich(adapter.paramsFromSeed(seed, type), legacy)
+    ? adapter.enrich(
+        adapter.paramsFromSeed(seed, type),
+        legacy || !!adapter.legacyConfig?.(input),
+      )
     : adapter.paramsFromSeed(seed, type);
   const params = {};
   for (const [key, rule] of Object.entries(adapter.schema)) {

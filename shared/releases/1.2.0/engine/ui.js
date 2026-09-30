@@ -136,7 +136,9 @@ export function createUI(app) {
   if (adapter.options?.length) {
     const section = element("details", "tuning");
     section.open = true;
-    section.append(element("summary", null, "Architecture & parts"));
+    section.append(
+      element("summary", null, adapter.optionsLabel || "Architecture & parts"),
+    );
     const body = element("div", "details-body");
     section.append(body);
     panel.append(section);

@@ -5,6 +5,9 @@
 
 import * as THREE from "three";
 import { makeRng } from "@engine/rng.js";
+import { addTreeDetails, treeShape, foliageShades } from "./details.js";
+import { part, mergePart } from "@engine/geometry.js";
+import { detailed } from "@engine/options.js";
 
 const Y = new THREE.Vector3(0, 1, 0);
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -105,7 +108,7 @@ function grow(group, p, mats, r, start, dir, len, rad, depth, leaves, splits) {
   }
 }
 
-function buildPine(group, p, mats, r) {
+function buildPine(group, p, mats, r, foliage = group) {
   const h = p.height;
   segment(
     group,
@@ -135,7 +138,8 @@ function buildPine(group, p, mats, r) {
     );
     cone.castShadow = true;
     cone.receiveShadow = true;
-    group.add(cone);
+    if (p.foliageOn !== false) foliage.add(cone);
+    else cone.geometry.dispose();
   }
 }
 
@@ -143,15 +147,34 @@ export function buildTree(p, mats) {
   const g = new THREE.Group();
   g.name = "tree";
   const r = makeRng((p.seed ^ 0x1234abcd) >>> 0);
+  const branches = part(g, "Branches"),
+    foliage = part(g, "Foliage"),
+    tips = [];
+  const shape = treeShape(p);
+  const leafy =
+    p.foliageOn !== false &&
+    (!detailed(p) || p.season !== "winter" || p.kind === "pine");
+  const shades = leafy ? foliageShades(p, mats.foliage) : [];
+  let leafIndex = 0;
+  const leafMat = () => shades[leafIndex++ % shades.length];
 
   if (p.kind === "pine") {
-    buildPine(g, p, mats, r);
+    buildPine(
+      branches,
+      { ...shape, foliageOn: leafy },
+      { ...mats, foliage: leafy ? shades[0] : mats.foliage },
+      r,
+      foliage,
+    );
+    if (detailed(p) && leafy)
+      for (let i = 0; i < foliage.children.length; i++)
+        foliage.children[i].material = shades[i % shades.length];
   } else {
     const leaves = [];
     const splits = Math.round(p.splits);
     grow(
-      g,
-      p,
+      branches,
+      shape,
       mats,
       r,
       v(0, 0, 0),
@@ -162,6 +185,7 @@ export function buildTree(p, mats) {
       leaves,
       splits,
     );
+    tips.push(...leaves);
     // size a crown from the branch tips, then fill it with a few clean chunks
     let cy = 0,
       maxR = 0;
@@ -170,16 +194,42 @@ export function buildTree(p, mats) {
       maxR = Math.max(maxR, Math.hypot(t.x, t.z));
     }
     cy = leaves.length ? cy / leaves.length : p.height * p.trunkFrac;
-    const crownR = Math.max(p.height * 0.24, maxR + p.foliageSize * 0.7);
+    const crownR =
+      Math.max(p.height * 0.24, maxR + p.foliageSize * 0.7) *
+      (detailed(p) && p.crownType === "column" ? 0.6 : 1);
     const center = v(0, cy + crownR * 0.12, 0);
-    for (const t of leaves)
-      blob(g, t, p.foliageSize * (0.85 + 0.4 * r()), mats.foliage, r);
+    for (const t of leaves) {
+      const radius = shape.foliageSize * (0.85 + 0.4 * r());
+      if (leafy) blob(foliage, t, radius, leafMat(), r);
+      else {
+        r();
+        r();
+        r();
+        r();
+        r();
+        r();
+      }
+    }
     const fill = Math.min(
       16,
       Math.max(4, Math.round(crownR * 1.4 + p.blobsPerCluster) - leaves.length),
     );
-    canopyDome(g, center, crownR, fill, mats.foliage, r);
+    if (leafy) canopyDome(foliage, center, crownR, fill, leafMat(), r);
   }
+  if (detailed(p)) {
+    if (p.archetype === "aspen") {
+      const pale = mats.trunk.clone();
+      pale.color.set("#d8daca");
+      pale.name = "aspen-bark";
+      for (const node of branches.children) node.material = pale;
+    }
+    mergePart(branches);
+    mergePart(foliage);
+    for (const mat of shades)
+      if (!foliage.children.some((node) => node.material === mat))
+        mat.dispose();
+  }
+  addTreeDetails(g, p, mats, tips);
 
   const box = new THREE.Box3().setFromObject(g);
   const size = new THREE.Vector3(),

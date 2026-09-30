@@ -18,6 +18,7 @@ import { exportRotationGIF } from "./gif-export.js";
 import { makeZIP } from "./zip.js";
 import { WorkspaceStore } from "./persistence.js";
 import { createUI } from "./ui.js";
+import { turntableDistance } from "./framing.js";
 
 export async function startGenerator(adapter) {
   let renderer;
@@ -273,6 +274,7 @@ async function initialize(adapter, onRenderer) {
             onProgress?.(done, total);
           },
           renderLoop: renderFrame,
+          model,
         }),
       );
     },
@@ -470,12 +472,13 @@ async function initialize(adapter, onRenderer) {
     const direction = new THREE.Vector3(
         ...adapter.camera.direction,
       ).normalize(),
-      radius = size.length() / 2,
-      fov = THREE.MathUtils.degToRad(camera.fov / 2);
-    const distance =
-      (radius /
-        Math.sin(Math.min(fov, Math.atan(Math.tan(fov) * camera.aspect)))) *
-      1.08;
+      radius = size.length() / 2;
+    const distance = turntableDistance(
+      size,
+      direction,
+      camera.fov,
+      camera.aspect,
+    );
     camera.position.copy(center).addScaledVector(direction, distance);
     controls.target.copy(center);
     controls.maxDistance = Math.max(adapter.camera.max, distance * 3);

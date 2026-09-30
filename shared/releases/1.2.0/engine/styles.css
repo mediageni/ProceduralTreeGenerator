@@ -100,7 +100,8 @@ button {
     11px/1.6 ui-monospace,
     monospace;
   color: var(--accent);
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  flex-shrink: 0;
   text-align: right;
 }
 .dice {
