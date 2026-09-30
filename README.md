@@ -1,26 +1,15 @@
-# Low Poly Tree Generator
+# Tree Generator
 
-Create and export procedural low poly 3D trees in your browser.
+Generate deterministic low poly 3D models, tune their parameters, try shared world palettes, and export GLB, OBJ with MTL, GIF, or a ZIP collection.
 
-![Low poly tree in the Meadow scene](screenshots/preview.jpg)
+[Open the live generator](https://3d.mediageni.com/procedural-tree-generator/)
 
-**Live generator:** https://3d.mediageni.com/procedural-tree-generator/
+Run locally with a static HTTP server (for example, `python3 -m http.server 8000`) and open http://localhost:8000/. No build or external JavaScript service is required.
 
-Run locally with a static web server from this directory, then open its local URL in a browser. For example:
+This standalone copy uses engine 1.1.0. Its runtime is generated from the canonical MediaGeni 3D engine; edit the canonical source when contributing changes.
 
-```sh
-python3 -m http.server 8000
-```
+On this static copy, settings and favorites last for the current page session. Model share links preserve complete configurations. The live site supports automatic workspace storage and recovery links.
 
-The generator uses Three.js and exports models as GLB or OBJ. The bundled Three.js files are covered by their own MIT license in [`js/vendor/LICENSE-threejs`](js/vendor/LICENSE-threejs). The generator code is available under the [MIT License](LICENSE).
+OBJ downloads include an accompanying MTL file; keep both files together when importing. ZIP collections include their configurations in collection.json.
 
-## More low poly generators
-
-Explore the other open-source generators in this collection:
-
-- [Low Poly Car Generator](https://github.com/mediageni/LowPolyCarGenerator)
-- [Low Poly Motorcycle Generator](https://github.com/mediageni/LowPolyMotorcycleGenerator)
-- [Low Poly Boat & Ship Generator](https://github.com/mediageni/LowPolyBoatGenerator)
-- [Low Poly House Generator](https://github.com/mediageni/LowPolyHouseGenerator)
-- [Low Poly Skyscraper Generator](https://github.com/mediageni/LowPolySkyscraperGenerator)
-- [Low Poly Rock & Cliff Generator](https://github.com/mediageni/LowPolyRockGenerator)
+Source is MIT licensed. Bundled Three.js r169 and gifenc 1.0.3 retain their license files in the vendor directory.

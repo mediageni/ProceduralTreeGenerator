@@ -3,18 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#1a0b2e" />
+  <meta name="theme-color" content="#fffdf7" />
   <title>Low Poly Tree Generator</title>
   <meta name="description" content="Grow low poly 3D trees online. Choose from five tree and bush types, adjust branching and foliage, and export your model as GLB or OBJ." />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E%F0%9F%8C%B2%3C/text%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="css/style.css?v=20260929-gif-panel-only" />
+  <link rel="stylesheet" href="./shared/releases/1.1.0/engine/styles.css" />
   <script type="importmap">
-  {
-    "imports": {
-      "three": "./js/vendor/three.module.js",
-      "three/addons/": "./js/vendor/"
-    }
+{
+  "imports": {
+    "three": "./shared/releases/1.1.0/vendor/three.module.js",
+    "three/addons/": "./shared/releases/1.1.0/vendor/",
+    "@engine/": "./shared/releases/1.1.0/engine/"
   }
+}
   </script>
   <link rel="canonical" href="https://3d.mediageni.com/procedural-tree-generator/">
   <!-- Google tag (gtag.js) -->
@@ -32,19 +33,19 @@
     <details>
       <summary>Switch generator</summary>
       <div class="generator-menu">
-        <a href="/low-poly-car-generator/">Car</a>
-        <a href="/low-poly-motorcycle-generator/">Motorcycle</a>
-        <a href="/low-poly-boat-generator/">Boat &amp; Ship</a>
-        <a href="/low-poly-house-generator/">House</a>
-        <a href="/procedural-tree-generator/" aria-current="page">Tree</a>
-        <a href="/low-poly-rock-generator/">Rock &amp; Cliff</a>
-        <a href="/low-poly-skyscraper-generator/">Skyscraper</a>
-        <a class="all-generators" href="/">All generators →</a>
+        <a href="https://3d.mediageni.com/low-poly-car-generator/">Car</a>
+        <a href="https://3d.mediageni.com/low-poly-motorcycle-generator/">Motorcycle</a>
+        <a href="https://3d.mediageni.com/low-poly-boat-generator/">Boat &amp; Ship</a>
+        <a href="https://3d.mediageni.com/low-poly-house-generator/">House</a>
+        <a href="https://3d.mediageni.com/procedural-tree-generator/" aria-current="page">Tree</a>
+        <a href="https://3d.mediageni.com/low-poly-rock-generator/">Rock &amp; Cliff</a>
+        <a href="https://3d.mediageni.com/low-poly-skyscraper-generator/">Skyscraper</a>
+        <a class="all-generators" href="https://3d.mediageni.com/">All generators →</a>
       </div>
     </details>
   </nav>
-  <div class="generator-version" aria-label="Generator version 1.0.3">v1.0.3</div>
-  <script type="module" src="js/main.js?v=20260929-gif-panel-only"></script>
+  <div class="generator-version" aria-label="Generator version 1.1.0">v1.1.0</div>
+  <script type="module" src="./shared/releases/1.1.0/adapters/tree/main.js"></script>
   <!-- Statcounter for MediaGeni -->
   <script>var sc_project=8091059; var sc_invisible=1; var sc_security="5dd6b2f6";</script>
   <script src="https://www.statcounter.com/counter/counter.js" async></script>

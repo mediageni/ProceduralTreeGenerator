@@ -1,0 +1,31 @@
+{
+  "engine": "1.1.0",
+  "files": {
+    "adapters/tree/adapter.js": "433bd249545031645d1309399649b0538f9395126e00fef1271474e1249db0f9",
+    "adapters/tree/builder.js": "8e51b0ec7531f5ca770b7c14eef4d1ed98a25ec010432261f94843024a3bbeeb",
+    "adapters/tree/main.js": "e808f912515a5287cfe714a609bb85bc617d8fd1d869fcea71ac913a9caa516c",
+    "adapters/tree/params.js": "2abbd9cffdfe89bbe4475412660bde98fa989b8250b7c63c0f430b36e26bb19a",
+    "adapters/tree/styles.js": "b1f4152d43b8aa8fb5b7f036653b6dc04a9fda6ff2d0a4c4dd03c9e1e355c5c2",
+    "engine/exporter.js": "fb38c8d08f6991e9450b23c5d0b4df5d9362118a367711578a529c2b835c2726",
+    "engine/gif-export.js": "a36a370111d09e438817d0bc2c31250ebad12ecdff75e16be0ba9fdb6f176260",
+    "engine/lifecycle.js": "633a7001d507a1d63b5c2c331fc53b6454cdabea18fe16a72f8a31c163b44d61",
+    "engine/materials.js": "b51af6128dca9709b65852e1adc42830b6ea6d2ed9efa0bdccd41b59757ff8a0",
+    "engine/palettes.js": "e24a16f7b475b93353c91d22b27bc9fa1fcd55d4a781f4312b404688c1ae5742",
+    "engine/persistence.js": "9ce4d2bca7c928c7e01553abb5035aced17f54a091765ec38cf24d5547d4f7ae",
+    "engine/rng.js": "89df246f368830e8e5f1a2e85d02218f589771162587d733b3a78cd1869d1ecf",
+    "engine/runtime.js": "1e8985ae403a208f8ec24101ba6b8d0d2afea38c9cd5891b492f4f359b10e9bb",
+    "engine/state.js": "e9a75551cc34292591cb78accc61a445fa2c11088ee675802f6dc3a998f7b8d8",
+    "engine/styles.css": "a543feeb88f6d1122019e578a95eb1df71fcab35e4a0234131aadae3be698324",
+    "engine/ui.js": "61f64d43b8ef428ad84c774b932318ec6a3e52c2fe52ce7d631d72419f6f80ad",
+    "engine/version.js": "499258fc3cdf3abbb983758a0ce13fcc83fd9cad02233056834672c683f7051b",
+    "engine/zip.js": "e58b79af0b28e1f8cf100cc343711c783259342e4305ccb7ee1afb3639f00ac0",
+    "vendor/GLTFExporter.js": "3937e0a2c05c4d16a1fa020d7fbc3d91e43eb54b6a75440f6ed6b13393200778",
+    "vendor/LICENSE-gifenc": "1610b01533a777ff952669a7d4fcb1e03b0d088c3409fd606d130f2d97cb017f",
+    "vendor/LICENSE-threejs": "4c40a1ef62450b857c3b2aaf294936304cd552d965fbcd9d32d4c5bcf4ba4454",
+    "vendor/OBJExporter.js": "66390a529d3c24246258cd62e255e4b3910624d9ccdf8a502ef7e49043672eaa",
+    "vendor/OrbitControls.js": "80efaadea4f8a636a65fb0bd08bfef62f3d93a0bb94e2e7500f23176c5c07f4e",
+    "vendor/TextureUtils.js": "d9a427b2255891ac9f2bfa9c10e1eb2305abe79aaafb831583fc4a410307151c",
+    "vendor/gifenc.esm.js": "cec614f6b77348eb6ea6a64921bab65e72d5e7f839a097c8fda8fc883c3146f7",
+    "vendor/three.module.js": "0a3368c165eea773490aec7b77c22de70e3eac288503409256fdbf4d12578416"
+  }
+}

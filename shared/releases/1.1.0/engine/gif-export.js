@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
 const SIZE = 400;
 const FRAMES = 36;
@@ -6,8 +6,15 @@ const FRAME_DELAY = 100;
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
 
 // Record through the existing WebGL context without moving the live preview camera.
-export async function exportRotationGIF({ scene, camera, controls, renderer, filename, onProgress, renderLoop }) {
-  const { GIFEncoder, quantize, applyPalette } = await import('./vendor/gifenc.esm.js');
+export async function exportRotationGIF({
+  scene,
+  camera,
+  controls,
+  renderer,
+  filename,
+  onProgress,
+  renderLoop,
+}) {
   const target = new THREE.WebGLRenderTarget(SIZE, SIZE, { depthBuffer: true });
   target.texture.colorSpace = renderer.outputColorSpace;
   const captureCamera = camera.clone();
@@ -17,7 +24,6 @@ export async function exportRotationGIF({ scene, camera, controls, renderer, fil
   const pixels = new Uint8Array(SIZE * SIZE * 4);
   const rgba = new Uint8Array(pixels.length);
   const rowBytes = SIZE * 4;
-  const gif = GIFEncoder();
   const previousTarget = renderer.getRenderTarget();
   const previousAutoRotate = controls.autoRotate;
   const previousEnabled = controls.enabled;
@@ -29,14 +35,19 @@ export async function exportRotationGIF({ scene, camera, controls, renderer, fil
   renderer.setAnimationLoop(null);
 
   try {
+    const { GIFEncoder, quantize, applyPalette } =
+      await import("../vendor/gifenc.esm.js");
+    const gif = GIFEncoder();
     controls.enableDamping = false;
     controls.update(); // clear any pending drag motion before recording
     camera.position.copy(previousPosition);
     camera.quaternion.copy(previousQuaternion);
     for (let frame = 0; frame < FRAMES; frame++) {
-      captureCamera.position.copy(controls.target).add(
-        offset.clone().applyAxisAngle(Y_AXIS, (frame / FRAMES) * Math.PI * 2)
-      );
+      captureCamera.position
+        .copy(controls.target)
+        .add(
+          offset.clone().applyAxisAngle(Y_AXIS, (frame / FRAMES) * Math.PI * 2),
+        );
       captureCamera.lookAt(controls.target);
       renderer.setRenderTarget(target);
       renderer.render(scene, captureCamera);
@@ -50,15 +61,19 @@ export async function exportRotationGIF({ scene, camera, controls, renderer, fil
       }
       const palette = quantize(rgba, 128);
       const indexed = applyPalette(rgba, palette);
-      gif.writeFrame(indexed, SIZE, SIZE, { palette, delay: FRAME_DELAY, repeat: 0 });
+      gif.writeFrame(indexed, SIZE, SIZE, {
+        palette,
+        delay: FRAME_DELAY,
+        repeat: 0,
+      });
       onProgress?.(frame + 1, FRAMES);
       if (frame % 4 === 3) await new Promise(requestAnimationFrame);
     }
 
     gif.finish();
-    const blob = new Blob([gif.bytes()], { type: 'image/gif' });
+    const blob = new Blob([gif.bytes()], { type: "image/gif" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = filename;
     document.body.append(link);
