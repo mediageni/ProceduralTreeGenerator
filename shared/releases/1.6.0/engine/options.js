@@ -4,9 +4,9 @@ export const detailRule = { type: "enum", values: [0, 1] };
 export const detailed = (p) => p.detailVersion === 1;
 export const detailOption = {
   key: "detailVersion",
-  label: "Detail level",
+  label: "Model design",
   values: [
-    { value: 1, label: "Detailed" },
+    { value: 1, label: "Refined" },
     { value: 0, label: "Original" },
   ],
 };

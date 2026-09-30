@@ -23,9 +23,9 @@ export function shapeSegments(base) {
 }
 export const shapeFinish = () => activeFinish;
 export function boxGeometry(w, h, d, key = activeFinish) {
-  if (key !== "soft") return new THREE.BoxGeometry(w, h, d);
+  if (key === "angular") return new THREE.BoxGeometry(w, h, d);
   const half = [w / 2, h / 2, d / 2],
-    bevel = Math.min(w, h, d) * 0.12;
+    bevel = Math.min(w, h, d) * (key === "shaped" ? 0.045 : 0.12);
   const vertices = [],
     faces = [],
     ids = new Map();
@@ -120,7 +120,7 @@ export function prepareShapeGeometry(input, key = activeFinish) {
   return geometry;
 }
 export function applyShapeFinish(root, key) {
-  if (key !== "soft") return root;
+  if (key === "angular") return root;
   const replacements = new Map(),
     processed = new Set(),
     disposed = new Set();
@@ -133,7 +133,7 @@ export function applyShapeFinish(root, key) {
         const { width, height, depth } = old.parameters;
         old.computeBoundingBox();
         const center = old.boundingBox.getCenter(new THREE.Vector3());
-        geometry = boxGeometry(width, height, depth, "soft");
+        geometry = boxGeometry(width, height, depth, key);
         geometry.translate(...center.toArray());
       }
       if (!processed.has(geometry)) {
@@ -149,7 +149,7 @@ export function applyShapeFinish(root, key) {
     for (const material of Array.isArray(node.material)
       ? node.material
       : [node.material]) {
-      if (material.flatShading) {
+      if (key === "soft" && material.flatShading) {
         material.flatShading = false;
         material.needsUpdate = true;
       }

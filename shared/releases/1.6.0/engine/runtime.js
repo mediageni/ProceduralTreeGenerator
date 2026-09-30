@@ -157,9 +157,6 @@ async function initialize(adapter, onRenderer) {
       if (FINISHES[key] && !app.locked("finish"))
         change((state) => {
           state.finish = key;
-          if (typeof state.params.detailVersion === "number")
-            state.params.detailVersion = key === "angular" ? 0 : 1;
-          adapter.onFinish?.(state.params, key);
         }, true);
     },
     setSlider(key, value) {
@@ -174,19 +171,6 @@ async function initialize(adapter, onRenderer) {
         );
     },
     setOption(key, value) {
-      // Keep the old adapter API available for saved integrations, while the
-      // user interface has one selector for the three model levels.
-      if (key === "detailVersion") {
-        if (value === 0 || value === 1)
-          app.setFinish(
-            value === 0
-              ? "angular"
-              : app.finishKey === "soft"
-                ? "soft"
-                : "shaped",
-          );
-        return;
-      }
       if (adapter.options?.some((s) => s.key === key) && !app.locked(key))
         change((state) => {
           state.params[key] = value;
@@ -404,8 +388,11 @@ async function initialize(adapter, onRenderer) {
       ...app.state,
       params: adapter.enrich ? adapter.enrich(params) : params,
     });
-    if (typeof next.params.detailVersion === "number")
-      next.params.detailVersion = next.finish === "angular" ? 0 : 1;
+    // Model design is independent of its surface finish, including rerolls.
+    if (typeof app.params.detailVersion === "number")
+      next.params.detailVersion = app.params.detailVersion;
+    if (typeof app.params.shapeVersion === "number")
+      next.params.shapeVersion = app.params.shapeVersion;
     return next;
   }
   function addEntry(state, favorite) {

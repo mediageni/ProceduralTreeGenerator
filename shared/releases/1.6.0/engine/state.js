@@ -120,7 +120,8 @@ export function normalizeState(adapter, input) {
     );
   const params = normalizeParams(
     adapter,
-    legacy ? input : input.params,
+    adapter.migrateParams?.(legacy ? input : input.params, input) ??
+      (legacy ? input : input.params),
     legacy,
   );
   // Before the three-level selector, Detailed + Angular already meant the
@@ -129,7 +130,7 @@ export function normalizeState(adapter, input) {
     ? input.finish
     : "angular";
   if (
-    input.finishVersion !== 2 &&
+    !(input.finishVersion >= 2) &&
     params.detailVersion === 1 &&
     finish === "angular"
   )
@@ -152,12 +153,16 @@ export function normalizeState(adapter, input) {
       ? input.palette
       : "original",
     finish,
-    finishVersion: 2,
+    finishVersion: 3,
     locks: Array.isArray(input.locks)
       ? [
           ...new Set(
             input.locks
-              .map((key) => (key === "detailVersion" ? "finish" : key))
+              .map((key) =>
+                key === "detailVersion" && !(input.finishVersion >= 3)
+                  ? "finish"
+                  : key,
+              )
               .filter((key) => validLocks.has(key)),
           ),
         ].slice(0, 64)
@@ -191,12 +196,15 @@ export function initialState(adapter, search, saved) {
         : adapter.firstType || adapter.defaultType),
   );
   const enriched = adapter.enrich ? adapter.enrich(params) : params;
+  if (
+    typeof enriched.detailVersion === "number" &&
+    adapter.defaultDetailVersion != null
+  )
+    enriched.detailVersion = adapter.defaultDetailVersion;
   const finish = ["angular", "shaped", "soft"].includes(query.get("finish"))
     ? query.get("finish")
     : adapter.defaultFinish ||
       (enriched.detailVersion === 1 ? "shaped" : "angular");
-  if (typeof enriched.detailVersion === "number")
-    enriched.detailVersion = finish === "angular" ? 0 : 1;
   return normalizeState(adapter, {
     v: STATE_VERSION,
     generator: adapter.id,
@@ -204,7 +212,7 @@ export function initialState(adapter, search, saved) {
     look: query.get("look") || adapter.defaultLook,
     palette: query.get("palette"),
     finish,
-    finishVersion: 2,
+    finishVersion: 3,
   });
 }
 export class StateHistory {

@@ -1,5 +1,10 @@
 import * as THREE from "three";
-import { boxGeometry, prepareShapeGeometry, shapeFinish } from "./finish.js";
+import {
+  boxGeometry,
+  prepareShapeGeometry,
+  shapeFinish,
+  shapeSegments,
+} from "./finish.js";
 export { mergeVertices } from "../vendor/BufferGeometryUtils.js";
 
 // Exportable primitives and batching shared by the model adapters.
@@ -54,7 +59,7 @@ export function cylinder(
 ) {
   return mesh(
     group,
-    new THREE.CylinderGeometry(top, radius, height, segments),
+    new THREE.CylinderGeometry(top, radius, height, shapeSegments(segments)),
     material,
     position,
   );
@@ -98,7 +103,13 @@ export function ring(
 ) {
   return mesh(
     group,
-    new THREE.TorusGeometry(radius, thickness, 4, 16, arc),
+    new THREE.TorusGeometry(
+      radius,
+      thickness,
+      shapeSegments(4),
+      shapeSegments(16),
+      arc,
+    ),
     material,
     position,
   );
