@@ -5,6 +5,8 @@
 
 import * as THREE from "three";
 import { buildNaturalTree } from "./natural.js";
+import { buildBotanicalTree } from "./botanical.js";
+import { LEGACY_KEYS } from "./params.js";
 import { makeRng } from "@engine/rng.js";
 import { addTreeDetails, treeShape, foliageShades } from "./details.js";
 import { part, mergePart } from "@engine/geometry.js";
@@ -145,6 +147,11 @@ function buildPine(group, p, mats, r, foliage = group) {
 }
 
 export function buildTree(p, mats) {
+  if (
+    !LEGACY_KEYS.includes(p.archetype) ||
+    (detailed(p) && p.branchVersion === 2)
+  )
+    return buildBotanicalTree(p, mats);
   if (detailed(p)) return buildNaturalTree(p, mats);
   const g = new THREE.Group();
   g.name = "tree";

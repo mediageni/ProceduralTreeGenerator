@@ -31,6 +31,10 @@ export const adapter = {
   setDerived,
   schema: schemaFromSamples(samples, SLIDERS, TREE_SCHEMA),
   enrich: enrichTree,
+  migrateParams: (params) => ({
+    ...params,
+    branchVersion: params?.branchVersion ?? 1,
+  }),
   legacyConfig: (params) => params?.detailVersion === undefined,
   options: TREE_OPTIONS,
   optionsLabel: "Crown & parts",

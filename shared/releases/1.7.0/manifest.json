@@ -1,12 +1,14 @@
 {
-  "engine": "1.6.0",
+  "engine": "1.7.0",
   "files": {
-    "adapters/tree/adapter.js": "50bd30db182a7f0ee66e31cdf6934584c3a50a7ea3d724dbff5760ca068bd15e",
-    "adapters/tree/builder.js": "acc35333c86d66ae3d7b88c9bf41e05b22a38a1c17135f34beb13635c6a65867",
-    "adapters/tree/details.js": "08dcec74ef71111144e594621a7cc44e026d54afafb13d0f78c784d4f9737e3e",
+    "adapters/tree/adapter.js": "1a184552cd62f8aeabc45a0be9dd109730bb08032471af61a262d7cb4539c879",
+    "adapters/tree/botanical.js": "6dc58464516997abcd31ab34e4472976a6049e3f18419f6167393ff21ce61e50",
+    "adapters/tree/builder.js": "1eeeff837a9a821a54eb4239b43313289417768652cd3c55644a0c78a2f32954",
+    "adapters/tree/canopy.js": "3ffc279fe3f2fe7791c0f4641edb83d1c9bf4fe24a085b4685e4d347ba91e45c",
+    "adapters/tree/details.js": "94433375d3ee5c727f2d34a66f0c15a8389092c8ebdf487546efa6ffc95b8eca",
     "adapters/tree/main.js": "e808f912515a5287cfe714a609bb85bc617d8fd1d869fcea71ac913a9caa516c",
     "adapters/tree/natural.js": "b184a6ba900e8517abf6c5a9dc2226e2fc93f6afb6e566bbd9beba17e159c1e1",
-    "adapters/tree/params.js": "2abbd9cffdfe89bbe4475412660bde98fa989b8250b7c63c0f430b36e26bb19a",
+    "adapters/tree/params.js": "915f729328341cda25ed5ca28e7cde48beba8c401a3a86c2e76cdd48159c0e8c",
     "adapters/tree/styles.js": "b1f4152d43b8aa8fb5b7f036653b6dc04a9fda6ff2d0a4c4dd03c9e1e355c5c2",
     "engine/boot.js": "44ff40548d996d9e03a83641fab5af8e833b2f67240f906b2af3c11ce085de67",
     "engine/download.js": "a14ffd6346f44b718d239a7bd93d21460a5c32a1f01b07ed5044a814164b7d52",
@@ -25,12 +27,13 @@
     "engine/state.js": "ab6b87971883fd2b5334c89e0e26a47ef054849fb29a2de16ce47217e6fde867",
     "engine/styles.css": "88b821645df9bd9cb89a477cfa7053307b19e7345bb9c6d8b2086493d68461eb",
     "engine/ui.js": "a4c210f59e41eb40c60c4728842d09c8653df3f3094097dba54cd0a54aa44c48",
-    "engine/version.js": "aae50a9ab2aa875dab8bc826ba1b8a7cac581fd346864359bac5ec57842fb9b0",
+    "engine/version.js": "85ae6f2f81d6b62ae78d7e645243cd51fc19121c481e9d3c03c651e6c5390897",
     "engine/zip.js": "e58b79af0b28e1f8cf100cc343711c783259342e4305ccb7ee1afb3639f00ac0",
     "vendor/BufferGeometryUtils.js": "c25b7930e570e9ec56173cd3b866ec8d2e10016630db3937efb439daf1cedbf6",
     "vendor/GLTFExporter.js": "3937e0a2c05c4d16a1fa020d7fbc3d91e43eb54b6a75440f6ed6b13393200778",
     "vendor/LICENSE-gifenc": "1610b01533a777ff952669a7d4fcb1e03b0d088c3409fd606d130f2d97cb017f",
     "vendor/LICENSE-meshoptimizer.txt": "f03037ca7bad1e3eb7f4a63fa6084a8baabd5ba30d3c239a9a7f35705d873e26",
+    "vendor/LICENSE-proctree.txt": "2e5c6536968e317f03c405c77ca981f65c832e0a6c7d63e3214d622e1dfe9ec9",
     "vendor/LICENSE-threejs": "4c40a1ef62450b857c3b2aaf294936304cd552d965fbcd9d32d4c5bcf4ba4454",
     "vendor/MarchingCubes.js": "b1c67207e4d2ab22c6550e57a8b9104896df2598e9bc513ffc4dc50238975e7b",
     "vendor/OBJExporter.js": "66390a529d3c24246258cd62e255e4b3910624d9ccdf8a502ef7e49043672eaa",
@@ -39,6 +42,7 @@
     "vendor/TextureUtils.js": "d9a427b2255891ac9f2bfa9c10e1eb2305abe79aaafb831583fc4a410307151c",
     "vendor/gifenc.esm.js": "cec614f6b77348eb6ea6a64921bab65e72d5e7f839a097c8fda8fc883c3146f7",
     "vendor/meshopt_simplifier.js": "c3098ee4cb4fc242b84f064c88898e76e44bf58b0e1f693507f323c08cdbb5ed",
+    "vendor/proctree.js": "be41230fa10e9f23d66821a598f82d050e4cbfee1c0f5de11e1267b96662b181",
     "vendor/three.module.js": "0a3368c165eea773490aec7b77c22de70e3eac288503409256fdbf4d12578416"
   }
 }

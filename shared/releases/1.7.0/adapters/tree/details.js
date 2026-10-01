@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { makeRng } from "@engine/rng.js";
 import { part, mesh, cylinder, tube, mergePart } from "@engine/geometry.js";
+import { LEGACY_KEYS } from "./params.js";
 import {
   detailOption,
   detailRule,
@@ -9,12 +10,15 @@ import {
   choices,
   toggle,
 } from "@engine/options.js";
+const treeDetailed = (p) => detailed(p) || !LEGACY_KEYS.includes(p.archetype);
 export function enrichTree(params, legacy = false) {
   return {
     ...params,
     detailVersion: legacy ? 0 : 1,
+    branchVersion: 2,
+    foliageMode: "clusters",
     crownType: params.archetype === "aspen" ? "column" : "natural",
-    season: "summer",
+    season: params.archetype === "sakura" ? "blossom" : "summer",
     foliageOn: true,
     rootsOn: true,
     barkOn: true,
@@ -24,6 +28,8 @@ export function enrichTree(params, legacy = false) {
 }
 export const TREE_SCHEMA = {
   detailVersion: detailRule,
+  branchVersion: { type: "enum", values: [1, 2] },
+  foliageMode: { type: "enum", values: ["leaves", "clusters"] },
   crownType: { type: "enum", values: ["natural", "round", "column"] },
   season: { type: "enum", values: ["summer", "autumn", "blossom", "winter"] },
   ...Object.fromEntries(
@@ -34,7 +40,16 @@ export const TREE_SCHEMA = {
   ),
 };
 export const TREE_OPTIONS = [
-  detailOption,
+  { ...detailOption, available: (p) => LEGACY_KEYS.includes(p.archetype) },
+  choices(
+    "foliageMode",
+    "Foliage style",
+    [
+      ["leaves", "Geometric leaves"],
+      ["clusters", "Sculpted canopy"],
+    ],
+    (p) => p.branchVersion === 2 && treeDetailed(p),
+  ),
   choices(
     "crownType",
     "Crown shape",
@@ -43,7 +58,7 @@ export const TREE_OPTIONS = [
       ["round", "Rounded"],
       ["column", "Column"],
     ],
-    (p) => detailed(p) && p.kind !== "pine",
+    (p) => treeDetailed(p) && p.kind === "broadleaf",
   ),
   choices(
     "season",
@@ -54,21 +69,24 @@ export const TREE_OPTIONS = [
       ["blossom", "Blossom"],
       ["winter", "Winter"],
     ],
-    detailed,
+    treeDetailed,
   ),
   toggle("foliageOn", "Foliage", () => true),
-  toggle("rootsOn", "Root flares"),
-  toggle("barkOn", "Bark detail"),
+  toggle("rootsOn", "Root flares", treeDetailed),
+  toggle("barkOn", "Bark detail", treeDetailed),
   toggle(
     "fruitOn",
     "Fruit",
     (p) =>
-      detailed(p) && p.kind !== "pine" && p.foliageOn && p.season !== "winter",
+      treeDetailed(p) &&
+      p.kind === "broadleaf" &&
+      p.foliageOn &&
+      p.season !== "winter",
   ),
-  toggle("groundOn", "Ground patch"),
+  toggle("groundOn", "Ground patch", treeDetailed),
 ];
 export function treeShape(p) {
-  if (!detailed(p)) return p;
+  if (!treeDetailed(p)) return p;
   if (p.crownType === "column")
     return {
       ...p,
